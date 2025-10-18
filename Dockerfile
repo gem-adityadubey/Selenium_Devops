@@ -1,15 +1,16 @@
-# Use Maven with Java 17 (includes JDK + Maven)
-FROM maven:3.9.9-eclipse-temurin-17
+# Start from Maven with JDK
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
-# Set working directory inside container
+# Install Chrome & chromedriver
+RUN apt-get update && apt-get install -y wget gnupg unzip curl \
+    chromium chromium-driver && rm -rf /var/lib/apt/lists/*
+
+# Copy project
 WORKDIR /app
+COPY . /app
 
-# Copy Maven descriptor and source
-COPY pom.xml .
-COPY src ./src
-
-# Download dependencies and build project (skip tests to save time)
+# Build project (downloads dependencies and compiles code)
 RUN mvn clean package -DskipTests
 
-# Run tests when the container starts
+# Run tests when container starts
 CMD ["mvn", "test"]
