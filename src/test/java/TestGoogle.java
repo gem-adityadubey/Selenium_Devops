@@ -12,7 +12,7 @@ public class TestGoogle {
     @Test
     public void testGoogleTitle() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");   // Run in background
+        //options.addArguments("--headless");   // Run in background
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
