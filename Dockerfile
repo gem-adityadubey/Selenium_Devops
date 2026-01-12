@@ -1,16 +1,33 @@
-# Start from Maven with JDK
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM selenium/standalone-chrome:latest
 
-# Install Chrome & chromedriver
-RUN apt-get update && apt-get install -y wget gnupg unzip curl \
-    chromium chromium-driver && rm -rf /var/lib/apt/lists/*
+USER root
 
-# Copy project
+# Install Java and Maven
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk maven && \
+    apt-get clean
+
+# Set working directory
 WORKDIR /app
-COPY . /app
 
-# Build project (downloads dependencies and compiles code)
-RUN mvn clean package -DskipTests
+# Copy pom first for caching
+COPY pom.xml .
 
-# Run tests when container starts
-CMD ["mvn", "test"]
+# Download dependencies
+RUN mvn dependency:go-offline
+
+# Copy source code
+COPY src ./src
+
+# Give ownership to seluser
+RUN chown -R seluser:seluser /app
+
+USER seluser
+
+# -----------------------------
+# ENTRYPOINT starts Selenium server always
+# -----------------------------
+# Start Selenium in background, wait until ready, then run Maven tests
+CMD bash -c "/opt/bin/entry_point.sh & echo 'Waiting for Selenium...' && until curl -s http://localhost:4444/status | grep -q '\"ready\": true'; do sleep 2; done && echo 'Selenium ready. Running tests...' && mvn clean test"
+
+
