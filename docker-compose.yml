@@ -1,21 +1,16 @@
+version: "3.8"
+
 services:
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium
     ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
+      - "4444:4444"
+    shm_size: 2gb
 
-  selenium-tests:
+  selenium-test:
     build: .
-    container_name: selenium-tests
+    container_name: selenium-testcase-container
     depends_on:
-      - jenkins
-    restart: "no"
-
-volumes:
-  jenkins_home:
+      - selenium
